@@ -1,17 +1,12 @@
-import { auth, db } from "./firebase.js";
+import { auth } from "./firebase.js";
+import { escapeHTML, formatarMoeda } from "./utils.js";
+import { criarProjetoNoBanco, atualizarProjetoNoBanco } from "./projeto-repository.js";
+import { comprimirImagem } from "./imagem-utils.js";
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-import {
-  ref,
-  push,
-  set,
-  update,
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
-
-/* =========================================================
-   ESTADO
-========================================================= */
+/*
+   ESTADO */
 
 let usuarioAtual = null;
 
@@ -24,17 +19,15 @@ let projeto = {
 
 let modoEdicao = false;
 
-/* =========================================================
-   AUTENTICAÇÃO
-========================================================= */
+/*
+   AUTENTICAÇÃO */
 
 onAuthStateChanged(auth, (user) => {
   usuarioAtual = user || null;
 });
 
-/* =========================================================
-   NOVO PROJETO
-========================================================= */
+/*
+   NOVO PROJETO */
 
 document.addEventListener("DOMContentLoaded", () => {
   const botao = document.getElementById("btnNovoProjeto");
@@ -44,9 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
   botao.addEventListener("click", abrirModalNovoProjeto);
 });
 
-/* =========================================================
-   ABRIR NOVO PROJETO
-========================================================= */
+/*
+   ABRIR NOVO PROJETO */
 
 function abrirModalNovoProjeto() {
   if (!usuarioAtual) {
@@ -116,9 +108,8 @@ function abrirModalNovoProjeto() {
   criarModal();
 }
 
-/* =========================================================
-   EDITAR PROJETO
-========================================================= */
+/*
+   EDITAR PROJETO */
 
 export function editarProjeto(projetoExistente) {
   if (!usuarioAtual) {
@@ -148,9 +139,8 @@ export function editarProjeto(projetoExistente) {
   criarModal();
 }
 
-/* =========================================================
-   MODAL PRINCIPAL
-========================================================= */
+/*
+   MODAL PRINCIPAL */
 
 function criarModal() {
   removerModalExistente();
@@ -357,9 +347,8 @@ function criarModal() {
   configurarEventosModal();
 }
 
-/* =========================================================
-   EVENTOS PRINCIPAIS
-========================================================= */
+/*
+   EVENTOS PRINCIPAIS */
 
 function configurarEventosModal() {
   document.getElementById("fecharNovoProjeto").onclick = fecharModal;
@@ -384,9 +373,8 @@ function configurarEventosModal() {
     });
 }
 
-/* =========================================================
-   RENDERIZAR SEÇÕES
-========================================================= */
+/*
+   RENDERIZAR SEÇÕES */
 
 function renderizarSecoes() {
   const container = document.getElementById("secoesProjeto");
@@ -473,9 +461,8 @@ function renderizarSecoes() {
   atualizarOrcamento();
 }
 
-/* =========================================================
-   RENDERIZAR CAMPOS
-========================================================= */
+/*
+   RENDERIZAR CAMPOS */
 
 function renderizarCampos(secao, indiceSecao) {
   if (!secao.campos || !secao.campos.length) {
@@ -573,9 +560,8 @@ function renderizarCampos(secao, indiceSecao) {
     .join("");
 }
 
-/* =========================================================
-   EVENTOS DAS SEÇÕES E CAMPOS
-========================================================= */
+/*
+   EVENTOS DAS SEÇÕES E CAMPOS */
 
 function configurarEventosSecoes() {
   document.querySelectorAll("[data-adicionar-campo]").forEach((botao) => {
@@ -631,9 +617,8 @@ function configurarEventosSecoes() {
   });
 }
 
-/* =========================================================
-   MODAL DE SEÇÃO
-========================================================= */
+/*
+   MODAL DE SEÇÃO */
 
 function abrirFormularioSecao(indice = null) {
   const editando = indice !== null;
@@ -701,9 +686,8 @@ function abrirFormularioSecao(indice = null) {
   });
 }
 
-/* =========================================================
-   MODAL DE CAMPO
-========================================================= */
+/*
+   MODAL DE CAMPO */
 
 function abrirFormularioCampo(indiceSecao, indiceCampo = null) {
   const editando = indiceCampo !== null;
@@ -751,9 +735,8 @@ function abrirFormularioCampo(indiceSecao, indiceCampo = null) {
   });
 }
 
-/* =========================================================
-   FORMULÁRIO DE SEÇÃO
-========================================================= */
+/*
+   FORMULÁRIO DE SEÇÃO */
 
 function criarFormularioModal(config) {
   fecharFormularioModal();
@@ -886,9 +869,8 @@ function criarFormularioModal(config) {
   });
 }
 
-/* =========================================================
-   FORMULÁRIO DE CAMPO
-========================================================= */
+/*
+   FORMULÁRIO DE CAMPO */
 
 function criarFormularioCampo(config) {
   fecharFormularioModal();
@@ -1162,9 +1144,8 @@ function criarFormularioCampo(config) {
   });
 }
 
-/* =========================================================
-   TIPO DO CAMPO
-========================================================= */
+/*
+   TIPO DO CAMPO */
 
 function atualizarTipoVisual() {
   const overlay = document.getElementById("formularioOverlay");
@@ -1188,9 +1169,8 @@ function atualizarTipoVisual() {
   }
 }
 
-/* =========================================================
-   MENU DO CAMPO
-========================================================= */
+/*
+   MENU DO CAMPO */
 
 function abrirMenuCampo(indiceSecao, indiceCampo, botao) {
   const antigo = document.querySelector(".menu-campo-dropdown");
@@ -1249,9 +1229,8 @@ function abrirMenuCampo(indiceSecao, indiceCampo, botao) {
   };
 }
 
-/* =========================================================
-   EXCLUIR SEÇÃO
-========================================================= */
+/*
+   EXCLUIR SEÇÃO */
 
 function excluirSecao(indice) {
   if (projeto.secoes.length <= 1) {
@@ -1271,9 +1250,8 @@ function excluirSecao(indice) {
   renderizarSecoes();
 }
 
-/* =========================================================
-   ORÇAMENTO
-========================================================= */
+/*
+   ORÇAMENTO */
 
 function calcularOrcamento() {
   let total = 0;
@@ -1297,9 +1275,8 @@ function atualizarOrcamento() {
   elemento.textContent = formatarMoeda(calcularOrcamento());
 }
 
-/* =========================================================
-   IMAGEM
-========================================================= */
+/*
+   IMAGEM */
 
 async function selecionarImagem(event) {
   const arquivo = event.target.files?.[0];
@@ -1332,9 +1309,8 @@ async function selecionarImagem(event) {
   }
 }
 
-/* =========================================================
-   SALVAR / ATUALIZAR PROJETO
-========================================================= */
+/*
+   SALVAR / ATUALIZAR PROJETO */
 
 async function salvarProjeto() {
   if (!usuarioAtual) return;
@@ -1380,63 +1356,32 @@ async function salvarProjeto() {
   }
 }
 
-/* =========================================================
-   CRIAR PROJETO NO FIREBASE
-========================================================= */
+/*
+   CRIAR PROJETO NO FIREBASE */
 
 async function criarProjeto(agora) {
-  const projetosRef = ref(db, `projetos/${usuarioAtual.uid}`);
-
-  const novoProjetoRef = push(projetosRef);
-
-  const novoProjeto = {
-    id: novoProjetoRef.key,
-
-    nome: projeto.nome,
-
-    imagem: projeto.imagem || null,
-
-    status: "aguardando",
-
+  await criarProjetoNoBanco({
+    usuarioId: usuarioAtual.uid,
+    projeto,
     orcamento: calcularOrcamento(),
-
-    secoes: projeto.secoes,
-
-    criadoEm: agora,
-
-    atualizadoEm: agora,
-  };
-
-  await set(novoProjetoRef, novoProjeto);
-}
-
-/* =========================================================
-   ATUALIZAR PROJETO NO FIREBASE
-========================================================= */
-
-async function atualizarProjeto(agora) {
-  if (!projeto.id) {
-    throw new Error("Projeto sem ID para atualização.");
-  }
-
-  const projetoRef = ref(db, `projetos/${usuarioAtual.uid}/${projeto.id}`);
-
-  await update(projetoRef, {
-    nome: projeto.nome,
-
-    imagem: projeto.imagem || null,
-
-    orcamento: calcularOrcamento(),
-
-    secoes: projeto.secoes,
-
-    atualizadoEm: agora,
+    agora,
   });
 }
 
-/* =========================================================
-   FECHAR MODAL PRINCIPAL
-========================================================= */
+/*
+   ATUALIZAR PROJETO NO FIREBASE */
+
+async function atualizarProjeto(agora) {
+  await atualizarProjetoNoBanco({
+    usuarioId: usuarioAtual.uid,
+    projeto,
+    orcamento: calcularOrcamento(),
+    agora,
+  });
+}
+
+/*
+   FECHAR MODAL PRINCIPAL */
 
 function fecharModal() {
   const overlay = document.getElementById("novoProjetoOverlay");
@@ -1454,9 +1399,8 @@ function fecharModal() {
   }, 180);
 }
 
-/* =========================================================
-   FECHAR MODAL SECUNDÁRIO
-========================================================= */
+/*
+   FECHAR MODAL SECUNDÁRIO */
 
 function fecharFormularioModal() {
   const overlay = document.getElementById("formularioOverlay");
@@ -1470,33 +1414,11 @@ function fecharFormularioModal() {
   }, 150);
 }
 
-/* =========================================================
-   UTILITÁRIOS
-========================================================= */
+/*
+   UTILITÁRIOS LOCAIS */
 
 function gerarId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
-}
-
-function formatarMoeda(valor) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-
-    currency: "BRL",
-  }).format(Number(valor) || 0);
-}
-
-function escapeHTML(valor) {
-  return String(valor)
-    .replace(/&/g, "&amp;")
-
-    .replace(/</g, "&lt;")
-
-    .replace(/>/g, "&gt;")
-
-    .replace(/"/g, "&quot;")
-
-    .replace(/'/g, "&#039;");
 }
 
 function removerModalExistente() {
@@ -1505,40 +1427,4 @@ function removerModalExistente() {
   if (modal) {
     modal.remove();
   }
-}
-
-function comprimirImagem(arquivo) {
-  return new Promise((resolve, reject) => {
-    const leitor = new FileReader();
-
-    leitor.onload = () => {
-      const imagem = new Image();
-
-      imagem.onload = () => {
-        const max = 1000;
-
-        const escala = Math.min(1, max / Math.max(imagem.width, imagem.height));
-
-        const canvas = document.createElement("canvas");
-
-        canvas.width = imagem.width * escala;
-
-        canvas.height = imagem.height * escala;
-
-        const contexto = canvas.getContext("2d");
-
-        contexto.drawImage(imagem, 0, 0, canvas.width, canvas.height);
-
-        resolve(canvas.toDataURL("image/jpeg", 0.65));
-      };
-
-      imagem.onerror = reject;
-
-      imagem.src = leitor.result;
-    };
-
-    leitor.onerror = reject;
-
-    leitor.readAsDataURL(arquivo);
-  });
 }

@@ -10,10 +10,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
 import { editarProjeto } from "./novo-projeto.js";
+import { escapeHTML, formatarMoeda, formatarData } from "./utils.js";
 
-// =========================================
+
 // CONFIGURAÇÕES
-// =========================================
+
 
 let projetosAtuais = [];
 
@@ -29,15 +30,15 @@ const ELEMENTOS = {
   confirmado: "confirmadosProjetos",
 };
 
-// =========================================
+
 // ESTADO
-// =========================================
+
 
 let usuarioAtual = null;
 
-// =========================================
+
 // AUTENTICAÇÃO
-// =========================================
+
 
 onAuthStateChanged(auth, (user) => {
   usuarioAtual = user || null;
@@ -50,9 +51,9 @@ onAuthStateChanged(auth, (user) => {
   carregarProjetos();
 });
 
-// =========================================
+
 // CARREGAR PROJETOS
-// =========================================
+
 
 function carregarProjetos() {
   const projetosRef = ref(db, `projetos/${usuarioAtual.uid}`);
@@ -77,9 +78,9 @@ function carregarProjetos() {
   });
 }
 
-// =========================================
+
 // ORGANIZAR E RENDERIZAR PROJETOS
-// =========================================
+
 
 function renderizarProjetos(projetos) {
   const projetosPorStatus = {
@@ -117,9 +118,9 @@ function renderizarProjetos(projetos) {
   atualizarContadorAguardando(projetosPorStatus[STATUS.AGUARDANDO].length);
 }
 
-// =========================================
+
 // RENDERIZAR COLUNA
-// =========================================
+
 
 function renderizarColuna(elementoId, projetos, mensagemVazia) {
   const container = document.getElementById(elementoId);
@@ -141,9 +142,9 @@ function renderizarColuna(elementoId, projetos, mensagemVazia) {
   });
 }
 
-// =========================================
+
 // CONTADOR
-// =========================================
+
 
 function atualizarContadorAguardando(quantidade) {
   const contador = document.getElementById("aguardandoCount");
@@ -153,9 +154,9 @@ function atualizarContadorAguardando(quantidade) {
   contador.textContent = quantidade;
 }
 
-// =========================================
+
 // CRIAR CARD
-// =========================================
+
 
 function criarCardProjeto(projeto, status) {
   const card = document.createElement("div");
@@ -291,9 +292,9 @@ function criarCardProjeto(projeto, status) {
   return card;
 }
 
-// =========================================
+
 // IMAGEM DO PROJETO
-// =========================================
+
 
 function criarImagemProjeto(projeto) {
   if (projeto.imagem) {
@@ -329,9 +330,9 @@ function criarImagemProjeto(projeto) {
   `;
 }
 
-// =========================================
+
 // BOTÕES DO PROJETO
-// =========================================
+
 
 function criarBotoesProjeto(projeto, status) {
   if (status === STATUS.AGUARDANDO) {
@@ -391,9 +392,9 @@ function criarBotoesProjeto(projeto, status) {
   return "";
 }
 
-// =========================================
+
 // EVENTOS DOS BOTÕES
-// =========================================
+
 
 function adicionarEventos(card) {
   const botoesAcao = card.querySelectorAll("[data-action]");
@@ -427,9 +428,9 @@ function adicionarEventos(card) {
   });
 }
 
-// =========================================
+
 // EXECUTAR AÇÃO
-// =========================================
+
 
 async function executarAcao(botao) {
   const acao = botao.dataset.action;
@@ -461,9 +462,9 @@ async function executarAcao(botao) {
   await alterarStatus(projetoId, novoStatus);
 }
 
-// =========================================
+
 // DEFINIR NOVO STATUS
-// =========================================
+
 
 function obterStatusDaAcao(acao) {
   const statusPorAcao = {
@@ -477,9 +478,9 @@ function obterStatusDaAcao(acao) {
   return statusPorAcao[acao] || null;
 }
 
-// =========================================
+
 // ALTERAR STATUS NO FIREBASE
-// =========================================
+
 
 async function alterarStatus(projetoId, novoStatus) {
   if (!usuarioAtual) return;
@@ -498,9 +499,9 @@ async function alterarStatus(projetoId, novoStatus) {
   }
 }
 
-// =========================================
+
 // APAGAR PROJETO
-// =========================================
+
 
 async function apagarProjeto(projetoId) {
   if (!usuarioAtual) return;
@@ -625,9 +626,9 @@ function abrirModalExcluir() {
   });
 }
 
-// =========================================
+
 // TEXTO DO STATUS
-// =========================================
+
 
 function textoStatus(status) {
   const textos = {
@@ -641,9 +642,9 @@ function textoStatus(status) {
   return textos[status] || "Status desconhecido";
 }
 
-// =========================================
+
 // ESTADO VAZIO
-// =========================================
+
 
 function mostrarVazio(container, mensagem) {
   container.innerHTML = `
@@ -663,9 +664,9 @@ function mostrarVazio(container, mensagem) {
   `;
 }
 
-// =========================================
+
 // LIMPAR DASHBOARD
-// =========================================
+
 
 function limparDashboard() {
   projetosAtuais = [];
@@ -683,48 +684,4 @@ function limparDashboard() {
   if (contador) {
     contador.textContent = "0";
   }
-}
-
-// =========================================
-// FORMATAÇÃO DE MOEDA
-// =========================================
-
-function formatarMoeda(valor) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(Number(valor) || 0);
-}
-
-// =========================================
-// FORMATAÇÃO DE DATA
-// =========================================
-
-function formatarData(timestamp) {
-  if (!timestamp) {
-    return "-";
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(timestamp));
-}
-
-// =========================================
-// SEGURANÇA
-// =========================================
-
-function escapeHTML(valor) {
-  return String(valor)
-    .replace(/&/g, "&amp;")
-
-    .replace(/</g, "&lt;")
-
-    .replace(/>/g, "&gt;")
-
-    .replace(/"/g, "&quot;")
-
-    .replace(/'/g, "&#039;");
 }
